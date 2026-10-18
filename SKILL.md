@@ -1,20 +1,73 @@
 ---
 name: ela4
-description: Evaluate the next actionable recommendations on a five-star scale, execute authorized four-star-or-higher work, and reassess until no such work remains. Use when the user invokes ELA4 or requests this recommendation-and-execution loop.
+description: Evaluate recommendations against the user's completion conditions, challenge consequential proposals, execute authorized four-star-or-higher work, and reassess from evidence. Use when the user invokes ELA4 or requests this recommendation-and-execution loop.
 ---
 
-# ELA4 — Execute & Loop Actions 4-star+
+# ELA4 — Execute, Challenge & Reassess
 
-Use this skill for the user's stated task and scope. A recommendation is not authorization to expand into unrelated projects, spend money, delete resources, or bypass repository rules. Apply the repository's `AGENTS.md` and relevant domain skills before changing files or infrastructure.
+## Scope and continuity
 
-1. Inspect current state, existing decisions, dirty files, plans, and validation evidence. Treat remembered status as a lead to verify, not proof of current state. Reuse the existing plan and carry the overall completion conditions, exclusions, and current critical blockers across invocations in the available conversation or required project records. Add newly discovered work to the required scope only with evidence that it blocks a completion condition; otherwise defer it. Revise incorrect assumptions or scope when security or data-integrity findings require it, recording why. Seek user direction on scope changes only when they materially change the intended outcome or cost, while preserving existing authorization requirements.
-2. List concrete next actions with a score out of five and a short reason. Score impact, urgency, prerequisite value, confidence, and validation cost. A task is actionable only when its target, completion condition, and safe validation path are clear. Split broad projects into independently verifiable actions; do not inflate scores to prolong the loop.
-   - **5/5:** High impact, ready to execute, strong evidence, straightforward validation, and very low change risk. Never claim risk is literally zero.
-   - **4/5:** Clear material benefit and feasible validation, with manageable risk or resource cost.
-   - **3/5 or less:** Limited benefit, weak evidence, unclear outcome, or risk/cost disproportionate to the benefit. An important but blocked task remains high priority; mark it blocked rather than lowering its score.
-3. Before a 4/5-or-higher action, use `grillme` when the score is borderline because key evidence is missing, the action has a consequential branch, or it may materially change a live system, incur substantial cost, or cause an irreversible effect. Ask the user to resolve the specific choice, including why the action matters and the concrete side effects; offer a recommended option and alternatives. Do not ask for approval again when the session already authorizes the same action and its effects. Keep required questions pending until answered; silence is not consent. Continue independent eligible work while waiting, and decide routine implementation details yourself.
-4. Execute the highest-value actionable item scoring at least 4/5. Preserve user changes and live resources. Follow existing authorization and approval requirements for external or irreversible effects. If one item is blocked, continue with independent eligible work.
-5. Verify the result with checks appropriate to the change. Reuse passing evidence only when its relevant code, environment, and assumptions remain applicable. Changes to runtime environment, packaging, interfaces, or state transitions require the affected integration checks; preserve repository-mandated checks. Distinguish product defects from test-tool defects. After a failure, retry based on new diagnostic evidence, a revised hypothesis, or a corrected condition; do not repeat the same repair and test without such a basis. If none exists, investigate the common cause or change approach. Append one concise line to a turn-local loop log recording the action, outcome, and evidence; carry this log into the next evaluation. Do not create a repository log or write persistent memory unless the user or repository rules require it. Reinspect state and rescore the remaining actions; do not carry forward stale scores. If new evidence changes a score, state the evidence and why it changes the impact or feasibility; an unfinished item does not lose priority merely because its validation is expensive.
-6. Stop when no actionable item within the authorized scope scores at least 4/5, or after **five execution cycles** in this invocation, whichever comes first. Also stop when progress requires missing access, user input, or a prohibited operation and no independent eligible work remains. Explain the blocker; never relabel blocked work below 4/5 simply to declare completion. At the five-cycle limit, report all remaining 4/5-or-higher items explicitly.
+First distinguish implementation from analysis, review, and proposal requests. For a bounded deliverable, producing that deliverable is the authorized work; recommendations inside it do not authorize their implementation. Follow user instructions, repository rules, and existing approvals. A high score never authorizes unrelated scope, spending, external messages, or destructive actions. Do not ask again for effects already authorized.
 
-Provide concise progress updates during a long run. In the final report, use a table with **each recommendation, its score, action taken, validation evidence, and current status**. Include unfinished and blocked 4/5-or-higher items as rows; distinguish a deterministic substitute from a live integration test and never report an unrun check as passed. State which completion conditions were met or critical uncertainties reduced, and which critical blockers remain; unrelated improvements are not progress on those blockers. Use the existing report for this rather than adding a separate tracking artifact. State the number of execution cycles completed and the exact stopping reason. The loop does not run in the background after the current turn; schedule future runs only if the user requests an automation.
+Inspect current files, decisions, dirty changes, and relevant runtime evidence. Memory and previous reports are leads, not current proof. Reuse the existing plan and carry completion conditions, explicit exclusions, assumptions, critical blockers, and reasons for rejected or deferred work across invocations. Reopen a rejected or deferred item only when relevant requirements, evidence, or conditions change.
+
+Keep the user's full intended outcome. Do not redefine completion around what is already implemented or easy to test. Do not expand required scope merely because another useful improvement is discovered. Tie additions to an unmet requirement or a demonstrated safety or data-integrity issue. Correct mistaken assumptions with evidence; obtain user direction when a choice materially changes the intended outcome or cost. Decide routine implementation details within existing authorization.
+
+## Select by incremental value
+
+For substantive next actions, identify the requirement served, missing evidence, completion check, and consequence of deferral. Compare the strongest alternative, including leaving the current state unchanged. No fixed candidate count or separate table is needed for obvious small work.
+
+Distinguish direct outcomes, necessary support work, and exploration. Support work needs a named dependency and an endpoint; preparation for blocked work must produce something usable when the blocker clears. Exploration needs a question and a decision its answer can change.
+
+Score the **additional value of this action given current evidence**, not the importance of the whole feature:
+
+- **5/5:** Substantial direct progress on an important completion condition or removal of a critical blocker.
+- **4/5:** Clear material progress, a necessary prerequisite, or resolution of a consequential uncertainty.
+- **3/5 or less:** Weak relevance, insufficient additional value, or cost disproportionate to the remaining benefit.
+
+Track readiness separately: executable, useful preparation possible, or blocked by access/input/external change. A blocked important task stays important; an easy task does not outrank it merely because it is executable. Compare urgency, dependencies, confidence, cost, and risk. Do not inflate scores to keep looping. If existing evidence is adequate, explain what remaining risk justifies additional work.
+
+## Challenge the proposal
+
+Before first execution of a nontrivial proposal, and after material failure, scope growth, or cost growth, perform a short adversarial review. Seek concrete counterexamples:
+
+- Could this pass its checks without satisfying the user's requirement?
+- Is this repeating adequate evidence, fixing the test apparatus, or compensating for a mistaken assumption?
+- Is easier peripheral work displacing the main blocker?
+- What existing behavior could break, and under what conditions?
+- Does added complexity or dependency cost exceed the benefit? Is a simpler approach or no change better?
+- What evidence would cause this proposal to be rejected or revised?
+
+For material findings, identify the affected requirement, failure conditions, supporting evidence, and disposition. Distinguish facts, inferences, and assumptions. A clear defect path can justify action before reproduction; a generic possibility alone does not justify new implementation.
+
+Revise proposals when warranted and recheck the finding and affected behavior. Explain substantive findings left unresolved. Do not fill a criticism quota or recursively review unchanged wording. If no new material counterexample remains, proceed to execution or a bounded experiment. Self-review is not independent verification. Do not add delegation or external review unless available and authorized.
+
+## Execute and verify
+
+Execute the highest-value actionable item scoring at least 4/5 within the authorized scope. Preserve unrelated user work and live resources. When a consequential choice requires input, explain the choice, recommendation, effects, and why input is needed; keep required answers pending while continuing independent eligible work. Silence is not approval.
+
+Before execution, set a proportionate completion condition, affected checks, and rough effort expectation. Exceeding that expectation triggers reassessment against new evidence and alternatives, not automatic abandonment or repeated permission requests. Avoid detailed estimates and extra artifacts for trivial work.
+
+A check must establish a required guarantee, cover a plausible regression from the change, or resolve decision-relevant uncertainty. Expected success is not a reason to skip necessary regression checks. Reuse passing evidence only while its code, environment, and assumptions remain applicable. Changes to interfaces, state transitions, packaging, or runtime environment require affected integration checks. Preserve repository-mandated gates. Batch setup where useful without weakening scenario isolation or removing failure conditions to make checks pass.
+
+Classify failures as product defects, test-tool defects, environment problems, or requirement/assumption errors. Retry only with new diagnostic evidence, a revised hypothesis, or corrected conditions. Otherwise investigate the common cause or change approach. An observation timeout alone does not prove a running task stopped: recheck its handle or authoritative state before restarting.
+
+## Reassess results, not activity
+
+One cycle selects a work hypothesis, executes it, and uses evidence to judge the result and next action. Investigation, implementation, tests, documentation, and Git are stages within a cycle, not five cycles. Rejected hypotheses can be useful results without being completed requirements. Cycle count is an execution limit, not a performance metric.
+
+After each cycle, update which completion conditions changed, what uncertainty was reduced, and which critical blockers remain. Separate necessary follow-up from optional improvement. If small checks accumulate while major blockers stay unchanged, compare priorities again. Do not abandon difficult core work solely because visible progress is slow; consider new evidence, the approach's validity, and alternatives.
+
+Keep one concise turn-local action/outcome/evidence entry for the next evaluation. Distinguish progress, a verified wait on a live operation, and no progress. Status restatements are not progress. Reuse existing conversation or required project records across invocations; do not create a persistent tracker or memory unless requested or required. Do not reset the objective merely because a new invocation begins.
+
+## Stop and report
+
+Stop when the requested bounded deliverable is complete, no authorized actionable item scores at least 4/5, or **five execution cycles** have completed in this invocation. Also stop when progress requires unavailable input/access or a prohibited action and no independent eligible work remains. Do not invent work to fill the limit, lower blocked priorities to claim completion, or treat invocation termination as overall goal completion.
+
+At the cycle limit, stop starting new improvement work. Confirm the state of operations already started and complete necessary cleanup or restoration, or explicitly hand off their live status and remaining responsibility. Reaching the limit alone is not evidence that an operation has stopped and is not authorization to terminate it. Do not use cleanup as a pretext for additional feature work.
+
+Before claiming the overall goal complete, map every completion condition to current evidence of matching scope. Missing, indirect, or partial evidence is not completion. At the cycle limit, explicitly report remaining 4/5-or-higher items and critical blockers. This skill does not itself run after the turn or schedule automation. Host-driven continuations must retain scope and unresolved decisions rather than resetting the loop.
+
+Provide concise progress updates. In the final report use a compact table with recommendation/linked completion condition, score, action, evidence, and status; include unfinished or blocked 4/5-or-higher work within scope. Distinguish code preparation, synthetic checks, live integration, and operational deployment. Record test-apparatus repair as support work, not completed product functionality. Test totals, commits, and document volume are not independent measures of progress.
+
+State the completion-condition change, remaining blockers, cycle count, and exact stop reason. Briefly justify the next choice if one remains. Do not claim unmeasured efficiency gains, completion percentages, or time savings. A skill revision is not evidence of improved behavior; when evaluating revisions, use bounded realistic cases and subsequent observed work, and acknowledge differing comparison conditions.

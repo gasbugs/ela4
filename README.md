@@ -1,6 +1,8 @@
 # ELA4
 
-ELA4 (Execute & Loop Actions 4-star+) is a Codex skill that scores the next actionable recommendations, executes authorized work rated at least 4/5, then reassesses. It stops when no eligible 4/5 action remains or after five execution cycles. When a consequential choice needs user input, it asks a focused `grillme` question and waits for the answer.
+ELA4 (Execute, Challenge & Reassess) is a Codex skill that scores the incremental value of next actions against the user's completion conditions, challenges nontrivial proposals, executes authorized work rated at least 4/5, and reassesses from evidence. Importance and readiness are separate. Analysis or proposal requests authorize the requested deliverable, not implementation of its recommendations.
+
+One cycle covers selection, execution, verification, and reassessment; those stages are not separate cycles. Stop when the bounded deliverable is complete, no eligible 4/5 action remains, or five cycles have completed. Keep unresolved completion conditions and prior deferral decisions across continuations. At the cycle limit, stop new improvement work while completing necessary cleanup or explicitly handing off active operations.
 
 ## Install
 
